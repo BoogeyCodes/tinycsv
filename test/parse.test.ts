@@ -67,3 +67,19 @@ describe('parseObjects', () => {
     expect(parseObjects('a,b,c\n1,2')).toEqual([{ a: '1', b: '2', c: '' }])
   })
 })
+
+describe('comment option', () => {
+  it('skips lines beginning with the comment character', () => {
+    const csv = '# a header comment\na,b\n# mid comment\n1,2\n'
+    expect(parse(csv, { comment: '#' })).toEqual([['a', 'b'], ['1', '2']])
+  })
+
+  it('does not treat a comment char mid-field or inside quotes as a comment', () => {
+    expect(parse('a#b,c', { comment: '#' })).toEqual([['a#b', 'c']])
+    expect(parse('"# not a comment",x', { comment: '#' })).toEqual([['# not a comment', 'x']])
+  })
+
+  it('is off by default', () => {
+    expect(parse('#x,y')).toEqual([['#x', 'y']])
+  })
+})

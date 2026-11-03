@@ -7,6 +7,8 @@ export interface ParseOptions {
   trim?: boolean
   /** Skip rows that are completely empty. Default: true. */
   skipEmptyLines?: boolean
+  /** Lines beginning with this character (outside quotes) are skipped. Default: none. */
+  comment?: string
 }
 
 /**
@@ -19,6 +21,7 @@ export function parse(input: string, options: ParseOptions = {}): string[][] {
   const quote = options.quote ?? '"'
   const trim = options.trim ?? false
   const skipEmptyLines = options.skipEmptyLines ?? true
+  const comment = options.comment
 
   const rows: string[][] = []
   let row: string[] = []
@@ -55,6 +58,13 @@ export function parse(input: string, options: ParseOptions = {}): string[][] {
       } else {
         field += ch
       }
+      continue
+    }
+
+    // A comment character at the very start of a line skips the whole line.
+    if (comment && ch === comment && !sawAny && field === '' && row.length === 0) {
+      while (i < input.length && input[i] !== '\n' && input[i] !== '\r') i++
+      if (input[i] === '\r' && input[i + 1] === '\n') i++
       continue
     }
 
